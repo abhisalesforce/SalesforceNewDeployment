@@ -25,12 +25,12 @@ jobs:
       - name: Authenticate to Destination Org
         run: |
           echo "${{ secrets.SFDX_AUTH_URL }}" > auth_file.txt
-          sfdx org login sfdx-url --sfdx-url-file=auth_file.txt --alias destination-org --set-default
+          sf org login sfdx-url --sfdx-url-file auth_file.txt --alias destination-org --set-default
           rm auth_file.txt
 
       - name: Deploy to Destination Org
         run: |
-          sfdx project deploy start --target-org destination-org --wait 100
+          sf project deploy start --target-org destination-org --wait 100
 
       - name: Show Deployment Status
         if: always()
