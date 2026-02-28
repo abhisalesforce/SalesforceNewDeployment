@@ -30,9 +30,10 @@ jobs:
 
       - name: Deploy to Destination Org
         run: |
-          sf project deploy start --target-org destination-org --wait 100
+          sf project deploy start --target-org destination-org --test-level RunLocalTests --wait 100
 
       - name: Show Deployment Status
         if: always()
         run: |
           echo "✅ Deployment workflow completed!"
+          echo "Deployed HelloWorld and HelloWorldTest classes to destination org."
