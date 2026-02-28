@@ -367,13 +367,15 @@
                   "",
                   "pm.test('Response contains object metadata', function () {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('name');",
-                  "    pm.expect(jsonData.name).to.equal('Account');",
+                  "    var describe = jsonData.objectDescribe || jsonData;",
+                  "    pm.expect(describe).to.have.property('name');",
+                  "    pm.expect(describe.name).to.equal('Account');",
                   "});",
                   "",
                   "pm.test('Object is queryable', function () {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.queryable).to.be.true;",
+                  "    var describe = jsonData.objectDescribe || jsonData;",
+                  "    pm.expect(describe.queryable).to.be.true;",
                   "});"
                 ],
                 "type": "text/javascript"
