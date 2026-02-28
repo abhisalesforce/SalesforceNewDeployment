@@ -1,0 +1,38 @@
+name: Deploy to Destination Org
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Salesforce CLI
+        run: npm install --global @salesforce/cli
+
+      - name: Authenticate to Destination Org
+        run: |
+          echo "${{ secrets.SFDX_AUTH_URL }}" > auth_file.txt
+          sfdx org login sfdx-url --sfdx-url-file=auth_file.txt --alias destination-org --set-default
+          rm auth_file.txt
+
+      - name: Deploy to Destination Org
+        run: |
+          sfdx project deploy start --target-org destination-org --wait 100
+
+      - name: Show Deployment Status
+        if: always()
+        run: |
+          echo "✅ Deployment workflow completed!"
