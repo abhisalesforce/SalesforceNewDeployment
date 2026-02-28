@@ -22,6 +22,9 @@ jobs:
       - name: Install Salesforce CLI
         run: npm install --global @salesforce/cli
 
+      - name: Install Newman
+        run: npm install --global newman newman-reporter-htmlextra
+
       - name: Authenticate to Destination Org
         run: |
           echo "${{ secrets.SFDX_AUTH_URL }}" > auth_file.txt
@@ -31,6 +34,34 @@ jobs:
       - name: Deploy to Destination Org
         run: |
           sf project deploy start --source-dir force-app --target-org destination-org --test-level NoTestRun --wait 100
+
+      - name: Get Org Access Token and URL for API Tests
+        id: org-info
+        run: |
+          ORG_INFO=$(sf org display --target-org destination-org --json)
+          ORG_URL=$(echo "$ORG_INFO" | node -e "const d=require('fs').readFileSync('/dev/stdin','utf8');const r=JSON.parse(d).result;console.log(r.instanceUrl);")
+          ACCESS_TOKEN=$(echo "$ORG_INFO" | node -e "const d=require('fs').readFileSync('/dev/stdin','utf8');const r=JSON.parse(d).result;console.log(r.accessToken);")
+          echo "org_url=$ORG_URL" >> "$GITHUB_OUTPUT"
+          echo "::add-mask::$ACCESS_TOKEN"
+          echo "access_token=$ACCESS_TOKEN" >> "$GITHUB_OUTPUT"
+
+      - name: Run API Tests with Newman
+        run: |
+          mkdir -p newman-reports
+          newman run postman-collection.json \
+            --environment postman-environment.json \
+            --env-var "org_url=${{ steps.org-info.outputs.org_url }}" \
+            --env-var "access_token=${{ steps.org-info.outputs.access_token }}" \
+            --reporters cli,htmlextra \
+            --reporter-htmlextra-export newman-reports/api-test-report.html \
+            --timeout-request 30000
+
+      - name: Publish API Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-test-reports
+          path: newman-reports/
 
       - name: Show Deployment Status
         if: always()

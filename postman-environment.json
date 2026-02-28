@@ -1,0 +1,33 @@
+{
+  "id": "sf-api-environment",
+  "name": "Salesforce API Environment",
+  "values": [
+    {
+      "key": "org_url",
+      "value": "https://your-org.salesforce.com",
+      "enabled": true,
+      "description": "Salesforce org base URL (e.g. https://MyDomainName.my.salesforce.com)"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "enabled": true,
+      "description": "OAuth 2.0 access token obtained after authentication. In CI, set via SF_ACCESS_TOKEN secret."
+    },
+    {
+      "key": "api_version",
+      "value": "v52.0",
+      "enabled": true,
+      "description": "Salesforce REST API version (must match sourceApiVersion in sfdx-project.json)"
+    },
+    {
+      "key": "timeout",
+      "value": "30000",
+      "enabled": true,
+      "description": "Request timeout in milliseconds"
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2026-01-01T00:00:00.000Z",
+  "_postman_exported_using": "Postman/10.0.0"
+}

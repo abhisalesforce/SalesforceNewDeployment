@@ -1,0 +1,425 @@
+{
+  "info": {
+    "_postman_id": "sf-api-tests-collection",
+    "name": "Salesforce API Tests",
+    "description": "API tests for Salesforce REST APIs to validate deployment of HelloWorld and related resources.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Verify Org Authentication",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains org identity', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('identity');",
+                  "    pm.expect(jsonData).to.have.property('rest');",
+                  "    pm.expect(jsonData).to.have.property('sobjects');",
+                  "});",
+                  "",
+                  "pm.test('API version is present', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('sobjects');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{org_url}}/services/data/{{api_version}}/",
+              "host": ["{{org_url}}"],
+              "path": ["services", "data", "{{api_version}}", ""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Apex REST",
+      "item": [
+        {
+          "name": "Execute HelloWorld greet via Anonymous Apex",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Execution succeeds', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success');",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test('No compile error', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.compiled).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test('Response body contains expected greeting', function () {",
+                  "    pm.expect(pm.response.text()).to.include('success');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{org_url}}/services/data/{{api_version}}/tooling/executeAnonymous/?anonymousBody=System.debug(HelloWorld.greet('Salesforce'));",
+              "host": ["{{org_url}}"],
+              "path": [
+                "services",
+                "data",
+                "{{api_version}}",
+                "tooling",
+                "executeAnonymous",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "anonymousBody",
+                  "value": "System.debug(HelloWorld.greet('Salesforce'));"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Execute HelloWorld greet with blank name via Anonymous Apex",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Execution succeeds', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success');",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test('No compile error', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.compiled).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{org_url}}/services/data/{{api_version}}/tooling/executeAnonymous/?anonymousBody=System.debug(HelloWorld.greet(''));",
+              "host": ["{{org_url}}"],
+              "path": [
+                "services",
+                "data",
+                "{{api_version}}",
+                "tooling",
+                "executeAnonymous",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "anonymousBody",
+                  "value": "System.debug(HelloWorld.greet(''));"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tooling API",
+      "item": [
+        {
+          "name": "Verify HelloWorld Apex Class Exists",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('HelloWorld class is found', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('totalSize');",
+                  "    pm.expect(jsonData.totalSize).to.be.at.least(1);",
+                  "    pm.expect(jsonData.records).to.be.an('array').that.is.not.empty;",
+                  "    pm.expect(jsonData.records[0].Name).to.equal('HelloWorld');",
+                  "});",
+                  "",
+                  "pm.test('Class status is Active', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.records[0].Status).to.equal('Active');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{org_url}}/services/data/{{api_version}}/tooling/query/?q=SELECT Id,Name,Status FROM ApexClass WHERE Name='HelloWorld'",
+              "host": ["{{org_url}}"],
+              "path": [
+                "services",
+                "data",
+                "{{api_version}}",
+                "tooling",
+                "query",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "SELECT Id,Name,Status FROM ApexClass WHERE Name='HelloWorld'"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Verify HelloWorldTest Apex Class Exists",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('HelloWorldTest class is found', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('totalSize');",
+                  "    pm.expect(jsonData.totalSize).to.be.at.least(1);",
+                  "    pm.expect(jsonData.records).to.be.an('array').that.is.not.empty;",
+                  "    pm.expect(jsonData.records[0].Name).to.equal('HelloWorldTest');",
+                  "});",
+                  "",
+                  "pm.test('Test class status is Active', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.records[0].Status).to.equal('Active');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{org_url}}/services/data/{{api_version}}/tooling/query/?q=SELECT Id,Name,Status FROM ApexClass WHERE Name='HelloWorldTest'",
+              "host": ["{{org_url}}"],
+              "path": [
+                "services",
+                "data",
+                "{{api_version}}",
+                "tooling",
+                "query",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "SELECT Id,Name,Status FROM ApexClass WHERE Name='HelloWorldTest'"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "REST API",
+      "item": [
+        {
+          "name": "List Available API Versions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array of API versions', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array').that.is.not.empty;",
+                  "});",
+                  "",
+                  "pm.test('Each version entry has required fields', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    jsonData.forEach(function (version) {",
+                  "        pm.expect(version).to.have.property('label');",
+                  "        pm.expect(version).to.have.property('url');",
+                  "        pm.expect(version).to.have.property('version');",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{org_url}}/services/data/",
+              "host": ["{{org_url}}"],
+              "path": ["services", "data", ""]
+            }
+          }
+        },
+        {
+          "name": "Query Account Object Metadata",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains object metadata', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('name');",
+                  "    pm.expect(jsonData.name).to.equal('Account');",
+                  "});",
+                  "",
+                  "pm.test('Object is queryable', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.queryable).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{org_url}}/services/data/{{api_version}}/sobjects/Account/",
+              "host": ["{{org_url}}"],
+              "path": [
+                "services",
+                "data",
+                "{{api_version}}",
+                "sobjects",
+                "Account",
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "org_url",
+      "value": "https://your-org.salesforce.com",
+      "description": "Salesforce org base URL"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "description": "OAuth access token"
+    },
+    {
+      "key": "api_version",
+      "value": "v52.0",
+      "description": "Salesforce API version"
+    }
+  ]
+}
