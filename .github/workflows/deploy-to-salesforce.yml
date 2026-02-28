@@ -3,7 +3,7 @@ name: Deploy to Destination Org
 on:
   push:
     branches:
-      - master
+      - main
   workflow_dispatch:
 
 jobs:
@@ -30,7 +30,7 @@ jobs:
 
       - name: Deploy to Destination Org
         run: |
-          sf project deploy start --target-org destination-org --test-level RunLocalTests --wait 100
+          sf project deploy start --source-dir force-app --target-org destination-org --test-level RunLocalTests --wait 100
 
       - name: Show Deployment Status
         if: always()
