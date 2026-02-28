@@ -1,0 +1,29 @@
+{
+  "name": "salesforce-api-tests",
+  "version": "1.0.0",
+  "description": "Postman/Newman API tests for User API Service and Salesforce REST APIs.",
+  "private": true,
+  "scripts": {
+    "test:api": "newman run postman-collection-api-tests.json --environment postman-environment-setup.json --reporters cli,htmlextra --reporter-htmlextra-export newman-reports/api-test-report.html --timeout-request 30000",
+    "test:api:sf": "newman run postman-collection.json --environment postman-environment.json --reporters cli,htmlextra --reporter-htmlextra-export newman-reports/sf-api-test-report.html --timeout-request 30000",
+    "test:api:ci": "bash newman-run.sh",
+    "test:api:dev": "BASE_URL=$DEV_BASE_URL ACCESS_TOKEN=$DEV_ACCESS_TOKEN bash newman-run.sh",
+    "test:api:staging": "BASE_URL=$STAGING_BASE_URL ACCESS_TOKEN=$STAGING_ACCESS_TOKEN bash newman-run.sh",
+    "test:api:prod": "BASE_URL=$PROD_BASE_URL ACCESS_TOKEN=$PROD_ACCESS_TOKEN bash newman-run.sh",
+    "report:open": "open newman-reports/api-test-report.html || xdg-open newman-reports/api-test-report.html"
+  },
+  "devDependencies": {
+    "newman": "^6.2.1",
+    "newman-reporter-htmlextra": "^1.23.1"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "salesforce",
+    "api-testing",
+    "postman",
+    "newman"
+  ],
+  "license": "MIT"
+}

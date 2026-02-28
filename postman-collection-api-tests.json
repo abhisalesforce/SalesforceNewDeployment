@@ -1,0 +1,675 @@
+{
+  "info": {
+    "_postman_id": "user-api-service-collection",
+    "name": "User API Service Tests",
+    "description": "Comprehensive REST API tests for User API Service covering all CRUD operations with pre-request scripts, test assertions, and dynamic variable handling.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "{{base_url}}",
+      "description": "Base URL for the User API Service"
+    },
+    {
+      "key": "created_user_id",
+      "value": "",
+      "description": "Dynamically set after user creation"
+    },
+    {
+      "key": "test_timestamp",
+      "value": "",
+      "description": "Timestamp used to generate unique test data"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Collection-level pre-request: set a shared timestamp for uniqueness",
+          "if (!pm.collectionVariables.get('test_timestamp')) {",
+          "    pm.collectionVariables.set('test_timestamp', Date.now().toString());",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "GET Health Status",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Ensure base_url is set",
+                  "pm.expect(pm.environment.get('base_url') || pm.variables.get('base_url')).to.not.be.empty;"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                  "});",
+                  "",
+                  "pm.test('Content-Type is application/json', function () {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+                  "});",
+                  "",
+                  "pm.test('Health check response is valid', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('object');",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "    pm.expect(jsonData.status).to.equal('ok');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Check the health/availability of the User API Service."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users - CRUD",
+      "item": [
+        {
+          "name": "GET All Users",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Confirm the access token is available",
+                  "var token = pm.environment.get('access_token');",
+                  "if (!token) {",
+                  "    console.warn('access_token is not set in the environment.');",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Response time is below 5 seconds', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                  "});",
+                  "",
+                  "pm.test('Each user has required fields', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.length > 0) {",
+                  "        jsonData.forEach(function (user) {",
+                  "            pm.expect(user).to.have.property('id');",
+                  "            pm.expect(user).to.have.property('username');",
+                  "            pm.expect(user).to.have.property('email');",
+                  "        });",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "users"]
+            },
+            "description": "Retrieve all users from the User API Service."
+          }
+        },
+        {
+          "name": "POST Create User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Generate unique test data using timestamp",
+                  "var ts = pm.collectionVariables.get('test_timestamp') || Date.now().toString();",
+                  "pm.environment.set('test_username', 'testuser_' + ts);",
+                  "pm.environment.set('test_email', 'testuser_' + ts + '@example.com');",
+                  "pm.environment.set('test_first_name', 'Test');",
+                  "pm.environment.set('test_last_name', 'User_' + ts);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response contains created user', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('username');",
+                  "    pm.expect(jsonData).to.have.property('email');",
+                  "});",
+                  "",
+                  "pm.test('Username matches request', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.username).to.equal(pm.environment.get('test_username'));",
+                  "});",
+                  "",
+                  "pm.test('Email matches request', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.email).to.equal(pm.environment.get('test_email'));",
+                  "});",
+                  "",
+                  "// Save the created user ID for use in subsequent requests",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.id) {",
+                  "    pm.collectionVariables.set('created_user_id', jsonData.id);",
+                  "    pm.environment.set('created_user_id', jsonData.id);",
+                  "    console.log('Created user ID:', jsonData.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{test_username}}\",\n  \"email\": \"{{test_email}}\",\n  \"firstName\": \"{{test_first_name}}\",\n  \"lastName\": \"{{test_last_name}}\",\n  \"role\": \"user\",\n  \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "users"]
+            },
+            "description": "Create a new user. Saves the returned user ID to the 'created_user_id' variable for use in subsequent requests."
+          }
+        },
+        {
+          "name": "GET User by ID",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Verify that a user was created previously",
+                  "var userId = pm.environment.get('created_user_id') || pm.collectionVariables.get('created_user_id');",
+                  "if (!userId) {",
+                  "    console.warn('created_user_id is not set. Run POST Create User first.');",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains user details', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('username');",
+                  "    pm.expect(jsonData).to.have.property('email');",
+                  "});",
+                  "",
+                  "pm.test('User ID matches requested ID', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var expectedId = pm.environment.get('created_user_id') || pm.collectionVariables.get('created_user_id');",
+                  "    pm.expect(String(jsonData.id)).to.equal(String(expectedId));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/users/{{created_user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "users", "{{created_user_id}}"]
+            },
+            "description": "Retrieve a specific user by their ID (uses the ID saved by POST Create User)."
+          }
+        },
+        {
+          "name": "PUT Update User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Set updated values for the test user",
+                  "pm.environment.set('updated_first_name', 'Updated');",
+                  "pm.environment.set('updated_last_name', 'Name');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains updated user', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('firstName');",
+                  "    pm.expect(jsonData).to.have.property('lastName');",
+                  "});",
+                  "",
+                  "pm.test('First name was updated', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.firstName).to.equal(pm.environment.get('updated_first_name'));",
+                  "});",
+                  "",
+                  "pm.test('Last name was updated', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.lastName).to.equal(pm.environment.get('updated_last_name'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"{{updated_first_name}}\",\n  \"lastName\": \"{{updated_last_name}}\",\n  \"role\": \"admin\",\n  \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/users/{{created_user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "users", "{{created_user_id}}"]
+            },
+            "description": "Update an existing user by ID (uses the ID saved by POST Create User)."
+          }
+        },
+        {
+          "name": "DELETE User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Confirm user ID is available before deleting",
+                  "var userId = pm.environment.get('created_user_id') || pm.collectionVariables.get('created_user_id');",
+                  "if (!userId) {",
+                  "    console.warn('created_user_id is not set. No user to delete.');",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 or 204', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});",
+                  "",
+                  "// Clean up the saved user ID after deletion",
+                  "pm.environment.unset('created_user_id');",
+                  "pm.collectionVariables.set('created_user_id', '');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/users/{{created_user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "users", "{{created_user_id}}"]
+            },
+            "description": "Delete a user by ID (uses the ID saved by POST Create User). Cleans up the created_user_id variable after deletion."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users - Error Cases",
+      "item": [
+        {
+          "name": "GET User Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Error message is present', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/users/nonexistent-id-000",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "users", "nonexistent-id-000"]
+            },
+            "description": "Attempt to retrieve a user with a non-existent ID. Expects a 404 response."
+          }
+        },
+        {
+          "name": "POST Create User - Missing Required Fields",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Validation error message is present', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"OnlyFirstName\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "users"]
+            },
+            "description": "Attempt to create a user without required fields. Expects a 400 validation error."
+          }
+        },
+        {
+          "name": "POST Create User - Unauthorized",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Unauthorized error is returned', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid-token-12345"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"unauthorized_test\",\n  \"email\": \"unauthorized@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/{{api_version}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "{{api_version}}", "users"]
+            },
+            "description": "Attempt to create a user with an invalid token. Expects a 401 Unauthorized response."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "POST Obtain Access Token",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Confirm credentials are available",
+                  "var clientId = pm.environment.get('client_id');",
+                  "var clientSecret = pm.environment.get('client_secret');",
+                  "if (!clientId || !clientSecret) {",
+                  "    console.warn('client_id or client_secret not set in environment.');",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains access token', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('access_token');",
+                  "    pm.expect(jsonData.access_token).to.be.a('string').that.is.not.empty;",
+                  "});",
+                  "",
+                  "pm.test('Token type is Bearer', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.token_type).to.equal('Bearer');",
+                  "});",
+                  "",
+                  "// Save the token for subsequent requests",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.access_token) {",
+                  "    pm.environment.set('access_token', jsonData.access_token);",
+                  "    console.log('Access token saved to environment.');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "client_credentials"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{client_id}}"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "{{client_secret}}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{auth_url}}/oauth2/token",
+              "host": ["{{auth_url}}"],
+              "path": ["oauth2", "token"]
+            },
+            "description": "Obtain an OAuth 2.0 access token using client credentials. Saves the token to the 'access_token' environment variable."
+          }
+        }
+      ]
+    }
+  ]
+}

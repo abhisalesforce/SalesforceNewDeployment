@@ -1,0 +1,117 @@
+{
+  "id": "user-api-environment",
+  "name": "User API Service - Environment",
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2026-01-01T00:00:00.000Z",
+  "_postman_exported_using": "Postman/10.0.0",
+  "values": [
+    {
+      "key": "environment",
+      "value": "dev",
+      "enabled": true,
+      "description": "Active environment: dev | staging | prod"
+    },
+    {
+      "key": "base_url",
+      "value": "https://your-salesforce-instance.my.salesforce.com",
+      "enabled": true,
+      "description": "Salesforce instance base URL (e.g. https://MyDomain.my.salesforce.com). Override with --env-var in CI."
+    },
+    {
+      "key": "auth_url",
+      "value": "https://login.salesforce.com",
+      "enabled": true,
+      "description": "Salesforce OAuth authorization URL. Use https://test.salesforce.com for sandboxes."
+    },
+    {
+      "key": "api_version",
+      "value": "v1",
+      "enabled": true,
+      "description": "User API Service version (e.g. v1, v2). Distinct from the Salesforce REST API version."
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "enabled": true,
+      "description": "OAuth 2.0 Bearer access token. Set dynamically by the 'POST Obtain Access Token' request or via --env-var in CI."
+    },
+    {
+      "key": "client_id",
+      "value": "",
+      "enabled": true,
+      "description": "Connected App Client ID (Consumer Key). Set this for the client_credentials OAuth flow."
+    },
+    {
+      "key": "client_secret",
+      "value": "",
+      "enabled": true,
+      "description": "Connected App Client Secret (Consumer Secret). Never commit real values. Use CI secrets or a secrets manager."
+    },
+    {
+      "key": "test_username",
+      "value": "",
+      "enabled": true,
+      "description": "Dynamically generated test username. Set by the pre-request script of POST Create User."
+    },
+    {
+      "key": "test_email",
+      "value": "",
+      "enabled": true,
+      "description": "Dynamically generated test email. Set by the pre-request script of POST Create User."
+    },
+    {
+      "key": "test_first_name",
+      "value": "Test",
+      "enabled": true,
+      "description": "First name used for test user creation."
+    },
+    {
+      "key": "test_last_name",
+      "value": "",
+      "enabled": true,
+      "description": "Dynamically generated test last name. Set by the pre-request script of POST Create User."
+    },
+    {
+      "key": "created_user_id",
+      "value": "",
+      "enabled": true,
+      "description": "ID of the user created during the test run. Populated by POST Create User and used by GET/PUT/DELETE requests."
+    },
+    {
+      "key": "updated_first_name",
+      "value": "Updated",
+      "enabled": true,
+      "description": "First name value used in PUT Update User request."
+    },
+    {
+      "key": "updated_last_name",
+      "value": "Name",
+      "enabled": true,
+      "description": "Last name value used in PUT Update User request."
+    },
+    {
+      "key": "request_timeout",
+      "value": "30000",
+      "enabled": true,
+      "description": "Per-request timeout in milliseconds."
+    },
+    {
+      "key": "dev_base_url",
+      "value": "https://your-dev-salesforce-instance.my.salesforce.com",
+      "enabled": false,
+      "description": "Development environment base URL. Enable and set base_url accordingly when targeting dev."
+    },
+    {
+      "key": "staging_base_url",
+      "value": "https://your-staging-salesforce-instance.my.salesforce.com",
+      "enabled": false,
+      "description": "Staging environment base URL. Enable and set base_url accordingly when targeting staging."
+    },
+    {
+      "key": "prod_base_url",
+      "value": "https://your-prod-salesforce-instance.my.salesforce.com",
+      "enabled": false,
+      "description": "Production environment base URL. Enable and set base_url accordingly when targeting prod."
+    }
+  ]
+}
